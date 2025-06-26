@@ -395,3 +395,398 @@ const CONTRACT_ABI = [
 export function getContract(signerOrProvider: any) {
   return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signerOrProvider);
 }
+
+const MULTI_MARKET_CONTRACT_ADDRESS =
+  '0xEf37d05A7860f5F495BdE2796f13fA78A68dDb8C';
+const MULTI_MARKET_CONTRACT_ABI = [
+  {
+    inputs: [],
+    stateMutability: 'nonpayable',
+    type: 'constructor',
+  },
+  {
+    inputs: [],
+    name: 'admin',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'enum PredictionMarketV2.Option',
+        name: '_result',
+        type: 'uint8',
+      },
+    ],
+    name: 'closeMarketAndSettle',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string',
+        name: '_question',
+        type: 'string',
+      },
+    ],
+    name: 'createMarket',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getAllMarketsCount',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+    ],
+    name: 'getCollectedAmounts',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'yesAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'noAmount',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+    ],
+    name: 'getMarket',
+    outputs: [
+      {
+        internalType: 'string',
+        name: 'question',
+        type: 'string',
+      },
+      {
+        internalType: 'bool',
+        name: 'isOpen',
+        type: 'bool',
+      },
+      {
+        internalType: 'bool',
+        name: 'resultDeclared',
+        type: 'bool',
+      },
+      {
+        internalType: 'enum PredictionMarketV2.Option',
+        name: 'result',
+        type: 'uint8',
+      },
+      {
+        internalType: 'uint256',
+        name: 'yesCount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'noCount',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+    ],
+    name: 'getNoVoters',
+    outputs: [
+      {
+        internalType: 'address[]',
+        name: '',
+        type: 'address[]',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+    ],
+    name: 'getVoter',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+      {
+        internalType: 'enum PredictionMarketV2.Option',
+        name: '',
+        type: 'uint8',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+    ],
+    name: 'getYesVoters',
+    outputs: [
+      {
+        internalType: 'address[]',
+        name: '',
+        type: 'address[]',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'marketCounter',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'enum PredictionMarketV2.Option',
+        name: '_option',
+        type: 'uint8',
+      },
+    ],
+    name: 'vote',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'voteAmount',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+];
+
+// Contract for Create Multiple markets and Vote on it at a time
+// // SPDX-License-Identifier: MIT
+// pragma solidity ^0.8.20;
+
+// contract PredictionMarketV2 {
+//     address public admin;
+//     uint256 public voteAmount = 0.001 ether;
+//     uint256 public marketCounter;
+
+//     enum Option { Yes, No }
+
+//     struct Voter {
+//         bool voted;
+//         Option choice;
+//     }
+
+//     struct Market {
+//         string question;
+//         bool isOpen;
+//         bool resultDeclared;
+//         Option finalResult;
+
+//         uint256 totalYesVotes;
+//         uint256 totalNoVotes;
+
+//         address[] yesVoters;
+//         address[] noVoters;
+
+//         mapping(address => Voter) voters;
+//     }
+
+//     mapping(uint256 => Market) private markets;
+
+//     constructor() {
+//         admin = msg.sender;
+//     }
+
+//     modifier onlyAdmin() {
+//         require(msg.sender == admin, "Only admin can perform this action");
+//         _;
+//     }
+
+//     modifier marketExists(uint256 marketId) {
+//         require(marketId < marketCounter, "Market does not exist");
+//         _;
+//     }
+
+//     function createMarket(string calldata _question) external onlyAdmin {
+//         Market storage m = markets[marketCounter];
+//         m.question = _question;
+//         m.isOpen = true;
+//         m.resultDeclared = false;
+//         marketCounter++;
+//     }
+
+//     function vote(uint256 marketId, Option _option) external payable marketExists(marketId) {
+//         Market storage m = markets[marketId];
+//         require(m.isOpen, "Market is closed");
+//         require(!m.voters[msg.sender].voted, "Already voted");
+//         require(msg.value == voteAmount, "Must send exactly 0.001 ETH");
+
+//         m.voters[msg.sender] = Voter({
+//             voted: true,
+//             choice: _option
+//         });
+
+//         if (_option == Option.Yes) {
+//             m.yesVoters.push(msg.sender);
+//             m.totalYesVotes++;
+//         } else {
+//             m.noVoters.push(msg.sender);
+//             m.totalNoVotes++;
+//         }
+//     }
+
+//     function closeMarketAndSettle(uint256 marketId, Option _result) external onlyAdmin marketExists(marketId) {
+//         Market storage m = markets[marketId];
+//         require(m.isOpen, "Market already closed");
+
+//         m.isOpen = false;
+//         m.resultDeclared = true;
+//         m.finalResult = _result;
+
+//         address[] memory winners = (_result == Option.Yes) ? m.yesVoters : m.noVoters;
+//         address[] memory losers = (_result == Option.Yes) ? m.noVoters : m.yesVoters;
+//         uint256 rewardPool = losers.length * voteAmount;
+
+//         if (winners.length > 0 && rewardPool > 0) {
+//             uint256 rewardPerWinner = rewardPool / winners.length;
+//             for (uint256 i = 0; i < winners.length; i++) {
+//                 payable(winners[i]).transfer(voteAmount + rewardPerWinner);
+//             }
+//         }
+//     }
+
+//     // 🔎 Public View Functions
+
+//     function getMarket(uint256 marketId) external view marketExists(marketId)
+//         returns (
+//             string memory question,
+//             bool isOpen,
+//             bool resultDeclared,
+//             Option result,
+//             uint256 yesCount,
+//             uint256 noCount
+//         )
+//     {
+//         Market storage m = markets[marketId];
+//         return (
+//             m.question,
+//             m.isOpen,
+//             m.resultDeclared,
+//             m.finalResult,
+//             m.totalYesVotes,
+//             m.totalNoVotes
+//         );
+//     }
+
+//     function getYesVoters(uint256 marketId) external view marketExists(marketId) returns (address[] memory) {
+//         return markets[marketId].yesVoters;
+//     }
+
+//     function getNoVoters(uint256 marketId) external view marketExists(marketId) returns (address[] memory) {
+//         return markets[marketId].noVoters;
+//     }
+
+//     function getVoter(uint256 marketId, address user) external view marketExists(marketId) returns (bool, Option) {
+//         Voter storage v = markets[marketId].voters[user];
+//         return (v.voted, v.choice);
+//     }
+
+//     function getAllMarketsCount() external view returns (uint256) {
+//         return marketCounter;
+//     }
+//     function getCollectedAmounts(uint256 marketId) external view returns (uint256 yesAmount, uint256 noAmount) {
+//       Market storage m = markets[marketId];
+//       yesAmount = m.totalYesVotes * voteAmount;
+//       noAmount = m.totalNoVotes * voteAmount;
+//   }
+// }
+
+export function getMultiMarketContract(signerOrProvider: any) {
+  return new ethers.Contract(
+    MULTI_MARKET_CONTRACT_ADDRESS,
+    MULTI_MARKET_CONTRACT_ABI,
+    signerOrProvider
+  );
+}
