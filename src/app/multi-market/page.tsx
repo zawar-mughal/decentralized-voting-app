@@ -10,6 +10,7 @@ import {
   TextField,
   Stack,
   Alert,
+  Grid,
 } from '@mui/material';
 import { getMultiMarketContract } from '@/lib/contract';
 
@@ -69,15 +70,26 @@ export default function Page() {
   const vote = async (marketId: number, option: number) => {
     try {
       if (!contract) throw new Error('No contract instance');
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const userAddress = await signer.getAddress();
+      const balance = await provider.getBalance(userAddress);
+
+      const voteCost = ethers.parseEther('0.001');
+      if (balance < voteCost) {
+        setAlert('Insufficient ETH balance to vote.');
+        return;
+      }
+
       const tx = await contract.vote(marketId, option, {
-        value: ethers.parseEther('0.001'),
+        value: voteCost,
       });
       await tx.wait();
       setAlert('Vote submitted!');
       fetchAllMarkets();
     } catch (err) {
-      console.error(err);
-      setAlert('Voting failed');
+      console.error('Vote error:', err);
+      setAlert('Voting failed. Check console for details.');
     }
   };
 
@@ -150,7 +162,7 @@ export default function Page() {
   }, [contract, fetchAllMarkets]);
 
   return (
-    <Container maxWidth='sm' sx={{ mt: 5 }}>
+    <Container sx={{ mt: 5 }}>
       <Typography variant='h4' gutterBottom>
         Decentralized Prediction Market
       </Typography>
@@ -183,70 +195,78 @@ export default function Page() {
         </Button>
       </Box>
 
-      {markets.map((market) => (
-        <Box key={market.id} border={1} borderRadius={2} p={2} mb={3}>
-          <Typography variant='h6' color='primary'>
-            Market #{market.id}
-          </Typography>
-          <Typography variant='body1' fontWeight='bold'>
-            {market.question}
-          </Typography>
+      <Grid container spacing={2}>
+        {markets.map((market) => (
+          <Grid size={{ xs: 12, md: 6 }} key={market.id}>
+            <Box border={1} borderRadius={2} p={2}>
+              <Typography variant='h6' color='primary'>
+                Market #{market.id}
+              </Typography>
+              <Typography variant='body1' fontWeight='bold'>
+                {market.question}
+              </Typography>
 
-          <Stack direction='row' spacing={2} mt={2}>
-            <Button
-              variant='outlined'
-              color='success'
-              onClick={() => vote(market.id, 0)}
-              disabled={!market.isOpen}
-            >
-              Vote YES ({market.yesCount})
-            </Button>
-            <Button
-              variant='outlined'
-              color='error'
-              onClick={() => vote(market.id, 1)}
-              disabled={!market.isOpen}
-            >
-              Vote NO ({market.noCount})
-            </Button>
-          </Stack>
+              <Stack direction='row' spacing={2} mt={2}>
+                <Button
+                  variant='outlined'
+                  color='success'
+                  onClick={() => vote(market.id, 0)}
+                  disabled={!market.isOpen}
+                >
+                  Vote YES ({market.yesCount})
+                </Button>
+                <Button
+                  variant='outlined'
+                  color='error'
+                  onClick={() => vote(market.id, 1)}
+                  disabled={!market.isOpen}
+                >
+                  Vote NO ({market.noCount})
+                </Button>
+              </Stack>
 
-          <Box mt={1}>
-            <Typography variant='body2'>
-              Yes Pool: {market.yesAmount} ETH
-            </Typography>
-            <Typography variant='body2'>
-              No Pool: {market.noAmount} ETH
-            </Typography>
-          </Box>
+              <Box mt={1}>
+                <Typography variant='body2'>
+                  Yes Pool: {market.yesAmount} ETH
+                </Typography>
+                <Typography variant='body2'>
+                  No Pool: {market.noAmount} ETH
+                </Typography>
+              </Box>
 
-          {!market.isOpen && (
-            <Box mt={2}>
-              <Alert severity='warning'>Market has been closed</Alert>
+              {market.isOpen ? (
+                <Box mt={2}>
+                  <Alert severity='success'>Market is open</Alert>
+                </Box>
+              ) : (
+                <Box mt={2}>
+                  <Alert severity='warning'>Market has been closed</Alert>
+                </Box>
+              )}
+
+              {account.toLowerCase() === admin.toLowerCase() &&
+                market.isOpen && (
+                  <Stack direction='row' spacing={2} mt={2}>
+                    <Button
+                      variant='contained'
+                      color='success'
+                      onClick={() => closeMarket(market.id, 0)}
+                    >
+                      Resolve: YES
+                    </Button>
+                    <Button
+                      variant='contained'
+                      color='error'
+                      onClick={() => closeMarket(market.id, 1)}
+                    >
+                      Resolve: NO
+                    </Button>
+                  </Stack>
+                )}
             </Box>
-          )}
-
-          {account.toLowerCase() === admin.toLowerCase() && market.isOpen && (
-            <Stack direction='row' spacing={2} mt={2}>
-              <Button
-                variant='contained'
-                color='success'
-                onClick={() => closeMarket(market.id, 0)}
-              >
-                Resolve: YES
-              </Button>
-              <Button
-                variant='contained'
-                color='error'
-                onClick={() => closeMarket(market.id, 1)}
-              >
-                Resolve: NO
-              </Button>
-            </Stack>
-          )}
-        </Box>
-      ))}
-
+          </Grid>
+        ))}
+      </Grid>
       {alert && (
         <Alert severity='info' sx={{ mt: 3 }}>
           {alert}
