@@ -1919,10 +1919,514 @@ const POLYMARKET_CONTRACT_2_ABI = [
 //     }
 // }
 
+// export function getPolyMarketContract2(signer: any) {
+//   return new ethers.Contract(
+//     POLYMARKET_CONTRACT_2_ADDRESS,
+//     POLYMARKET_CONTRACT_2_ABI,
+//     signer
+//   );
+// }
+
+const CPMM_CONTRACT_ADDRESS = '0x058c79A51ae984b0940fb904EBf402E9aD0Fe860';
+const CPMM_CONTRACT_ABI = [
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'enum PolymarketStylePrediction.Option',
+        name: '_option',
+        type: 'uint8',
+      },
+      {
+        internalType: 'uint256',
+        name: 'usdcAmount',
+        type: 'uint256',
+      },
+    ],
+    name: 'buyShares',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+    ],
+    name: 'claimWinnings',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'enum PolymarketStylePrediction.Option',
+        name: 'result',
+        type: 'uint8',
+      },
+    ],
+    name: 'closeMarket',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string',
+        name: '_question',
+        type: 'string',
+      },
+      {
+        internalType: 'uint256',
+        name: '_initialLiquidity',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: '_initialSharePrice',
+        type: 'uint256',
+      },
+    ],
+    name: 'createMarket',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_usdc',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'constructor',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
+      },
+    ],
+    name: 'OwnableInvalidOwner',
+    type: 'error',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'account',
+        type: 'address',
+      },
+    ],
+    name: 'OwnableUnauthorizedAccount',
+    type: 'error',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'id',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'enum PolymarketStylePrediction.Option',
+        name: 'result',
+        type: 'uint8',
+      },
+    ],
+    name: 'MarketClosed',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'id',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'string',
+        name: 'question',
+        type: 'string',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'initialPrice',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'liquidity',
+        type: 'uint256',
+      },
+    ],
+    name: 'MarketCreated',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'previousOwner',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'newOwner',
+        type: 'address',
+      },
+    ],
+    name: 'OwnershipTransferred',
+    type: 'event',
+  },
+  {
+    inputs: [],
+    name: 'renounceOwnership',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'enum PolymarketStylePrediction.Option',
+        name: '_option',
+        type: 'uint8',
+      },
+      {
+        internalType: 'uint256',
+        name: 'shareAmount',
+        type: 'uint256',
+      },
+    ],
+    name: 'sellShares',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'id',
+        type: 'uint256',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'enum PolymarketStylePrediction.Option',
+        name: 'option',
+        type: 'uint8',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'shares',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'cost',
+        type: 'uint256',
+      },
+    ],
+    name: 'SharePurchased',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'id',
+        type: 'uint256',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'enum PolymarketStylePrediction.Option',
+        name: 'option',
+        type: 'uint8',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'shares',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'payout',
+        type: 'uint256',
+      },
+    ],
+    name: 'ShareSold',
+    type: 'event',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'newOwner',
+        type: 'address',
+      },
+    ],
+    name: 'transferOwnership',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'id',
+        type: 'uint256',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'payout',
+        type: 'uint256',
+      },
+    ],
+    name: 'WinningsClaimed',
+    type: 'event',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'enum PolymarketStylePrediction.Option',
+        name: 'option',
+        type: 'uint8',
+      },
+    ],
+    name: 'getCurrentPrice',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+    ],
+    name: 'getPoolState',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'totalYes',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'totalNo',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'liquidity',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'marketId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+    ],
+    name: 'getShareBalances',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'yes',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'no',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'marketCounter',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    name: 'markets',
+    outputs: [
+      {
+        internalType: 'string',
+        name: 'question',
+        type: 'string',
+      },
+      {
+        internalType: 'bool',
+        name: 'isOpen',
+        type: 'bool',
+      },
+      {
+        internalType: 'bool',
+        name: 'resultDeclared',
+        type: 'bool',
+      },
+      {
+        internalType: 'enum PolymarketStylePrediction.Option',
+        name: 'finalResult',
+        type: 'uint8',
+      },
+      {
+        internalType: 'uint256',
+        name: 'totalYesShares',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'totalNoShares',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'liquidity',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'initialSharePrice',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'owner',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'usdc',
+    outputs: [
+      {
+        internalType: 'contract IERC20',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+];
+
 export function getPolyMarketContract2(signer: any) {
-  return new ethers.Contract(
-    POLYMARKET_CONTRACT_2_ADDRESS,
-    POLYMARKET_CONTRACT_2_ABI,
-    signer
-  );
+  return new ethers.Contract(CPMM_CONTRACT_ADDRESS, CPMM_CONTRACT_ABI, signer);
 }

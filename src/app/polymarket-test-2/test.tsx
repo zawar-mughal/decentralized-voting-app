@@ -21,19 +21,9 @@ export default function Page() {
   const [admin, setAdmin] = useState('');
   const [question, setQuestion] = useState('');
   const [liquidity, setLiquidity] = useState('');
-  const [sharePrice, setSharePrice] = useState('');
   const [contract, setContract] = useState<any>(null);
   const [alert, setAlert] = useState('');
   const [markets, setMarkets] = useState<any[]>([]);
-
-  console.log('Markets:', markets);
-  console.log('Contract:', contract);
-  console.log('Account:', account);
-  console.log('Admin:', admin);
-  console.log('Wallet Connected:', walletConnected);
-  console.log('Question:', question);
-  console.log('Liquidity:', liquidity);
-  console.log('Share Price:', sharePrice);
 
   const connectWallet = async () => {
     try {
@@ -63,7 +53,6 @@ export default function Page() {
       const usdc = new ethers.Contract(usdcAddress, usdcABI, signer);
 
       const liquidityAmount = ethers.parseUnits(liquidity, 6);
-      const priceAmount = ethers.parseUnits(sharePrice, 6);
       const contractAddress = await contract.getAddress();
       const userAddress = await signer.getAddress();
       const balance = await usdc.balanceOf(userAddress);
@@ -76,17 +65,12 @@ export default function Page() {
         await approval.wait();
       }
 
-      const tx = await contract.createMarket(
-        question,
-        liquidityAmount,
-        priceAmount
-      );
+      const tx = await contract.createMarket(question, liquidityAmount);
       await tx.wait();
 
       setAlert('Market created!');
       setQuestion('');
       setLiquidity('');
-      setSharePrice('');
       fetchAllMarkets();
     } catch (err) {
       console.error(err);
@@ -173,22 +157,19 @@ export default function Page() {
   };
 
   const fetchAllMarkets = useCallback(async () => {
-    if (!contract || !account) return;
+    if (!contract) return;
     try {
       const total = await contract.marketCounter();
       const all = [];
 
       for (let i = 0; i < total; i++) {
-        const m = await contract.markets(i);
-        const [yesShares, noShares] = await contract.getShareBalances(
-          i,
-          account
-        );
-        const [totalYes, totalNo, totalLiquidity] = await contract.getPoolState(
+        const [totalLiquidity, yesPool, noPool] = await contract.getLiquidity(
           i
         );
+        const [yesShares, noShares] = await contract.getUserShares(i, account);
         const yesPrice = await contract.getCurrentPrice(i, 0);
         const noPrice = await contract.getCurrentPrice(i, 1);
+        const m = await contract.markets(i);
 
         all.push({
           id: i,
@@ -219,12 +200,17 @@ export default function Page() {
       <Typography variant='h4'>Prediction Market</Typography>
 
       {!walletConnected && (
-        <Button variant='contained' onClick={connectWallet}>
-          Connect Wallet
-        </Button>
+        <>
+          <Button variant='contained' onClick={connectWallet}>
+            Connect Wallet
+          </Button>
+          <Typography variant='body2' color='warning.main' sx={{ mt: 2 }}>
+            Note: The network should be <b>Sepolia ETH</b>
+          </Typography>
+        </>
       )}
 
-      {walletConnected && account.toLowerCase() === admin.toLowerCase() && (
+      {walletConnected && (
         <Box my={3}>
           <TextField
             label='Market Question'
@@ -238,13 +224,6 @@ export default function Page() {
             fullWidth
             value={liquidity}
             onChange={(e) => setLiquidity(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label='Initial Share Price (e.g. 0.50)'
-            fullWidth
-            value={sharePrice}
-            onChange={(e) => setSharePrice(e.target.value)}
             sx={{ mb: 2 }}
           />
           <Button variant='contained' onClick={createMarket}>
@@ -342,7 +321,11 @@ export default function Page() {
         ))}
       </Grid>
 
-      {alert && <Alert sx={{ mt: 3 }}>{alert}</Alert>}
+      {alert && (
+        <Alert severity='info' sx={{ mt: 3 }}>
+          {alert}
+        </Alert>
+      )}
     </Container>
   );
 }
